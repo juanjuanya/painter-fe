@@ -4,7 +4,7 @@ import './App.css';
 import io from 'socket.io-client'
 import PixelGrid from './PixelGrid'
 import ColorSelect from './ColorSelect'
-// import { produce} from 'immer'   //改update二位数组的点比较难改
+import { produce} from 'immer'   //改update二位数组的点比较难改
 
 
 
@@ -31,21 +31,24 @@ class App extends Component {
     })
     this.socket.on('update-dot', info => {//变了的用新的，不变的用原来的
       console.log(info)
-      this.setState({
-        pixelData: this.state.pixelData.map((row,rowIdx) => {
-          if(rowIdx === info.row) {
-            return row.map((color,colIdx) => {
-              if(colIdx === info.col) {
-                return info.color
-              } else {
-                return color
-              }
-            })
-          }else {
-            return row
-          }
-        })
-      })
+      this.setState(produce(this.state, state => {//当前的state换掉
+        state.pixelData[info.row][info.col] = info.color
+      }))
+      // this.setState({
+      //   pixelData: this.state.pixelData.map((row,rowIdx) => {
+      //     if(rowIdx === info.row) {
+      //       return row.map((color,colIdx) => {
+      //         if(colIdx === info.col) {
+      //           return info.color
+      //         } else {
+      //           return color
+      //         }
+      //       })
+      //     }else {
+      //       return row
+      //     }
+      //   })
+      // })
     })
   }
 
