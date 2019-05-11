@@ -15,49 +15,18 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      pixelData: null
-  }
+      // pixelData: null  //替换为pixelGrid的canvas画板了
+      currentColor: 'red'
+    }
+    //和服务器建立连接，得早点传，让可读
+    this.socket = io('ws://localhost:3005/')
 }
 
   componentDidMount (){
-    //和服务器建立连接
-    this.socket = io('ws://localhost:3005/')
-    this.socket.on('pixel-data',(data) =>{//监听事件
-      console.log(data)
-      this.setState({
-        currentColor: 'red',
-        pixelData: data
-      })
-    })
-    this.socket.on('update-dot', info => {//变了的用新的，不变的用原来的
-      console.log(info)
-      this.setState(produce(this.state, state => {//当前的state换掉
-        state.pixelData[info.row][info.col] = info.color
-      }))
-      // this.setState({
-      //   pixelData: this.state.pixelData.map((row,rowIdx) => {
-      //     if(rowIdx === info.row) {
-      //       return row.map((color,colIdx) => {
-      //         if(colIdx === info.col) {
-      //           return info.color
-      //         } else {
-      //           return color
-      //         }
-      //       })
-      //     }else {
-      //       return row
-      //     }
-      //   })
-      // })
-    })
+    
   }
 
   handlePixelClick = (row, col) => {
-    this.socket.emit('draw-dot', {
-      row,
-      col,
-      color: this.state.currentColor,
-    })
   }
 
   changeCurrentColor = (color) => {
@@ -69,7 +38,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <PixelGrid onPixelClick={this.handlePixelClick} pixels={this.state.pixelData}/>
+        <PixelGrid currentColor={this.state.currentColor} socket={this.socket}/>
         <ColorSelect onChange={this.changeCurrentColor} color = {this.state.currentColor}/>
       </div>
     )
