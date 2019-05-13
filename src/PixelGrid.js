@@ -1,11 +1,11 @@
 import React, { Component } from "react";
+import ReactDOM from 'react-dom'
 
 var canvasStyle = {
-  position: 'absolute', //div包了一下
+  // position: 'absolute', //div包了一下
   display: 'block',
-  left:0,
-  top:0,
   transformOrigin:'top left',
+  isPickingColor:false, //取色功能
 }
 
 ////定义一个函数画图片render
@@ -36,7 +36,7 @@ class PixelGrid extends Component {
   }
 
   setUpZoomHandler = () => {
-    this.canvas.addEventListener('mousewheel', e => {
+    this.canvasWrapper.addEventListener('mousewheel', e => {
       console.log(e)
       var mouseLayerX = e.layerX
       var mouseLayerY = e.layerY  //中心点放大，鼠标就点不准了，有偏移
@@ -63,8 +63,8 @@ class PixelGrid extends Component {
       var b = newZoomLevel
       var x = mouseLayerX
       var y = mouseLayerY
-      var l1 = parseFloat(this.canvas.style.left)
-      var t1 = parseFloat(this.canvas.style.top)
+      var l1 = parseFloat(this.canvasWrapper.style.left)
+      var t1 = parseFloat(this.canvasWrapper.style.top)
 
       // var l2 = (-(b/a - 1) * x + l1 *a) / b
       // var t2 = (-(b/a - 1) * y + t1 * a) / b  //放大布局会变
@@ -74,8 +74,8 @@ class PixelGrid extends Component {
       var l2 = l1 - (b / a - 1) * x  //像素不准了，
       var t2 = t1 - (b / a - 1) * y
 
-      this.canvas.style.left = l2 + 'px'
-      this.canvas.style.top = t2 + 'px'
+      this.canvasWrapper.style.left = l2 + 'px'
+      this.canvasWrapper.style.top = t2 + 'px'
 
       
 
@@ -98,13 +98,24 @@ class PixelGrid extends Component {
     var mouseMoveX
     var mouseMoveY
     this.canvasWrapper.addEventListener('mousedown',e=> {//canvas包了一层，改为挂在外层div上
-      initialLeft = parseFloat(this.canvas.style.left)
-      initialTop = parseFloat(this.canvas.style.top)
+      initialLeft = parseFloat(this.canvasWrapper.style.left)
+      initialTop = parseFloat(this.canvasWrapper.style.top)
       mouseInitialX = e.clientX
       mouseInitialY = e.clientY
       dragging = true
     })
-    this.canvasWrapper.addEventListener('mousemove', e=> {
+
+    this.canvas.addEventListener('mousemove', e=> {
+      var x = Math.floor(e.layerX / this.state.zoomLevel)
+      var y = Math.floor(e.layerY / this.state.zoomLevel)
+
+      this.setState({
+        dotHoverX: x,
+        dotHoverY: y,
+      })
+
+    })
+    window.addEventListener('mousemove', e=> { //改为window上的mousemove,可以一直跟随
       // console.log('手抖了')
       if(dragging) {
         var mouseX = e.clientX
@@ -117,10 +128,13 @@ class PixelGrid extends Component {
         var left = initialLeft + mouseMoveX //transfrom方式不用除回去
         var top = initialTop + mouseMoveY 
 
-        this.canvas.style.left = left + 'px'
-        this.canvas.style.top = top + 'px'
+        this.canvasWrapper.style.left = left + 'px'
+        this.canvasWrapper.style.top = top + 'px'
       }
 
+    })
+    window.addEventListener('mouseup', e=> {
+      dragging = false //mouseup时松手
     })
     this.canvasWrapper.addEventListener('mouseup', e => {
       console.log('mouseup',e)
@@ -172,7 +186,9 @@ class PixelGrid extends Component {
       this.canvas.width = image.width
       this.canvas.height = image.height
       this.ctx.drawImage(image,0,0)
-      
+
+      //首次画面出现以后，触发一次重新渲染,因为取色按钮第一次不出现，render()才出现，有可能是没挂上去
+      this.forceUpdate()
     })
 
     this.socket.on('update-dot', ({row,col,color}) => {
@@ -186,14 +202,40 @@ class PixelGrid extends Component {
     this.ctx.fillRect(row,col,1,1)
   }
 
+  setPickColor = () => {
+    this.setState({
+      isPickingColor: true
+    })
+  }
+  renderPickColorBtn() {
+    var el = document.getElementById('color-pick-placeholder')//取到了就用，取不到就不用
+    if (!el) {
+      return null
+    } else {
+      return ReactDOM.createPortal ((
+        <button onClick={this.setPickColor}>{
+          this.state.isPickingColor ? '正在取色' : '取色'
+        }</button>
+      ), el)
+
+    }
+  }
 
   
-//放大缩小的时候会rerender
+//放大缩小的时候会rerender， transfrom是不会把canvas真正放大的，宽高还是20
   render(){   
     console.log("pixel grid render")
    
     return (
-      <div style={{ position:'relative', width: this.props.width, height:this.props.height, display:'inline-block',border:'1px solid'}}>
+      <div style={{ 
+        position:'relative', 
+        width: this.props.width, 
+        height:this.props.height, 
+        display:'inline-block', 
+        border:'1px solid',
+        overflow: 'hidden'
+        }}>
+        {this.renderPickColorBtn()}
         <div ref={el => this.canvasWrapper = el} className="canvas-wrapper" style={{
           position: 'absolute',
           left: 0,
@@ -203,7 +245,11 @@ class PixelGrid extends Component {
             boxShadow: '0 0 1px black',
             width: this.state.zoomLevel + 'px',
             height: this.state.zoomLevel + 'px',
-            position: 'absolute'
+            position: 'absolute',
+            left: this.state.dotHoverX * this.state.zoomLevel + 'px',
+            top: this.state.dotHoverY * this.state.zoomLevel + 'px',
+            zIndex: 5,
+            pointerEvents: 'none'
           }}></span>
           <canvas  
                   style={{
