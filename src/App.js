@@ -38,7 +38,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <PixelGrid currentColor={this.state.currentColor} socket={this.socket}/>
+        <PixelGrid width={200} height={200} currentColor={this.state.currentColor} socket={this.socket}/>
         <ColorSelect onChange={this.changeCurrentColor} color = {this.state.currentColor}/>
       </div>
     )
