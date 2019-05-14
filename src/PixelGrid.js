@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import ReactDOM from 'react-dom'
+import _ from 'lodash'
 
 
 function getMousePos(e) {
@@ -40,9 +41,11 @@ class PixelGrid extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      zoomLevel: 5,
+      zoomLevel: 1,
       dotHoverX: -1,
       dotHoverY: -1,
+      width:100,
+      height:100,
     }
     this.canvas = null
     this.socket = this.props.socket
@@ -61,11 +64,6 @@ class PixelGrid extends Component {
       if(e.deltaY < 0) {
         newZoomLevel = this.state.zoomLevel + 1
       } else {
-        //设置最小为1
-        if(this.state.zoomLevel === 1) {
-          this.state.zoomLevel = 2
-          alert('再小就不好看了呦')
-        }
         newZoomLevel = this.state.zoomLevel - 1
       }
 
@@ -86,6 +84,14 @@ class PixelGrid extends Component {
       //用transition来做 直接放大不会重新布局，像图片放大镜 
       var l2 = l1 - (b / a - 1) * x  //像素不准了，
       var t2 = t1 - (b / a - 1) * y
+
+      //设置最小为1
+      if (newZoomLevel < 1) {
+        newZoomLevel = 1
+        l2= 0
+        t2 = 0  //复位
+        console.log('再小就不好看了呦')
+      }
 
       this.canvasWrapper.style.left = l2 + 'px'
       this.canvasWrapper.style.top = t2 + 'px'
@@ -217,7 +223,7 @@ class PixelGrid extends Component {
     })
   }
 
-  handleDotClick = (e) => {
+  handleDotClick = (e) => { //不让这个函数运行的太频繁,3s_.throttle(,3000)
     //找到用户点击坐标发回去
     console.log('handleDotClick',e.nativeEvent)
 
@@ -249,11 +255,17 @@ class PixelGrid extends Component {
 
       document.body.append(image)
       //根据二进制图片对象来重新设置图片大小
-      this.canvas.width = image.width
+      this.canvas.width = image.width 
       this.canvas.height = image.height
+
+      this.setState({
+        width: image.width,
+        height: image.height * 0.5, //删除
+      })
+
       this.ctx.drawImage(image,0,0)
 
-      //首次画面出现以后，触发一次重新渲染,因为取色按钮第一次不出现，render()才出现，有可能是没挂上去
+      //首次画面出现以后，触发一次重新渲染image,因为取色按钮第一次不出现，render()才出现，有可能是没挂上去
       this.forceUpdate()
     })
 
@@ -295,8 +307,8 @@ class PixelGrid extends Component {
     return (
       <div style={{ 
         position:'relative', 
-        width: this.props.width, 
-        height:this.props.height, 
+        width: this.state.width, 
+        height:this.state.height, 
         display:'inline-block', 
         border:'1px solid',
         overflow: 'hidden'

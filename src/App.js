@@ -4,6 +4,7 @@ import './App.css';
 import io from 'socket.io-client'
 import PixelGrid from './PixelGrid'
 import ColorSelect from './ColorSelect'
+import OnlineCount from './OnlineCount'
 import { produce} from 'immer'   //改update二位数组的点比较难改
 
 
@@ -16,7 +17,7 @@ class App extends Component {
     super(props)
     this.state = {
       // pixelData: null  //替换为pixelGrid的canvas画板了
-      currentColor: 'red'
+      currentColor: '#ff0000'
     }
     //和服务器建立连接，得早点传，让可读
     this.socket = io('ws://localhost:3005/')
@@ -39,9 +40,10 @@ class App extends Component {
     return (
       <div>
         <h1>Pixel Painter</h1>
-        <PixelGrid onPickColor={this.changeCurrentColor} width={200} height={200} currentColor={this.state.currentColor} socket={this.socket}/>
+        <PixelGrid onPickColor={this.changeCurrentColor} currentColor={this.state.currentColor} socket={this.socket}/>
         <span id="color-pick-placeholder"></span>
         <ColorSelect onChange={this.changeCurrentColor} color = {this.state.currentColor}/>
+        <OnlineCount socket={this.socket}/>
       </div>
     )
   }

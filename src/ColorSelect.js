@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 
-var colors = ['#ff0000','#ffa500','#ffff00','#00ff00','#00ffff','#0000ff','#800080']  //颜色和取色板上的颜色对上
+var colors = ['#ff0000','#ffa500','#ffff00','#00ff00','#00ffff','#0000ff','#800080','#ffffff','#000000']  //颜色和取色板上的颜色对上
 
 var ulStyle = {
   margin:0,
