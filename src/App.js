@@ -39,7 +39,7 @@ class App extends Component {
     return (
       <div>
         <h1>Pixel Painter</h1>
-        <PixelGrid width={200} height={200} currentColor={this.state.currentColor} socket={this.socket}/>
+        <PixelGrid onPickColor={this.changeCurrentColor} width={200} height={200} currentColor={this.state.currentColor} socket={this.socket}/>
         <span id="color-pick-placeholder"></span>
         <ColorSelect onChange={this.changeCurrentColor} color = {this.state.currentColor}/>
       </div>

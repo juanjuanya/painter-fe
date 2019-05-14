@@ -153,7 +153,7 @@ class PixelGrid extends Component {
       var mouseMoveDistance = Math.sqrt(mouseMoveX * mouseMoveX + mouseMoveY * mouseMoveY) || 0  //解决第一次click不上的问题
       // debugger
       console.log('distance',mouseMoveDistance)
-      if(mouseMoveDistance < 5) {
+      if(mouseMoveDistance < 3 && !this.state.isPickingColor) {
         //有移动距离大于XX时再click点
         this.handleDotClick(e)
       }
@@ -198,6 +198,21 @@ class PixelGrid extends Component {
         var pixelColorCss = 'rgba(' + pixelColor + ')'
         var cursorUrl = makeCursor(pixelColorCss)
         this.canvas.style.cursor = `url(${cursorUrl}) 6 6, crosshair`
+      }
+    })
+    this.canvas.addEventListener('click', e => {
+      if(this.state.isPickingColor) {
+        //拿到此时颜色
+        var [x,y] = getMousePos(e)
+        var pixelColor = Array.from(this.ctx.getImageData(x,y,1,1).data)
+        var hexColor = '#' + pixelColor.slice(0,3).map(it => {
+          return it.toString(16).padStart(2, '0')
+        }).join('')
+        this.props.onPickColor(hexColor)
+        this.setState({
+          isPickingColor:false  //取色后button状态还原
+        })
+        this.canvas.style.cursor = '' //取色指针状态还原
       }
     })
   }
