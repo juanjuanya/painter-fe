@@ -1,6 +1,19 @@
 import React, { Component } from "react";
 import ReactDOM from 'react-dom'
 
+
+function getMousePos(e) {
+  var layerX = e.layerX
+  var layerY = e.layerY
+  var zoom = e.target.style.transform.match(/scale\((.*?)\)/)[1]
+  // console.log('zoom',zoom)
+  return [
+    Math.floor(layerX / zoom),
+    Math.floor(layerY / zoom)
+  ]
+  
+}
+
 var canvasStyle = {
   // position: 'absolute', //div包了一下
   display: 'block',
@@ -84,8 +97,6 @@ class PixelGrid extends Component {
       })
       e.preventDefault()
     })
-
-    this.setUpDragHandler()
   }
 
   setUpDragHandler = () => {
@@ -153,6 +164,44 @@ class PixelGrid extends Component {
     })
   }
 
+  setUpPickColorHandler = (e) => {
+    function makeCursor(color) {
+      var cursor = document.createElement('canvas')
+      var ctx = cursor.getContext('2d')
+      cursor.width = 41
+      cursor.height = 41
+
+      ctx.beginPath()
+      ctx.lineWidth = 2
+      ctx.stokeStyle = '#000000'
+      ctx.moveTo(0,6)
+      ctx.lineTo(12,6)
+      ctx.moveTo(6,0)
+      ctx.lineTo(6,12)
+      ctx.stroke()
+
+      ctx.beginPath()
+      ctx.arc(25,25,14,0,2 * Math.PI, false)
+      ctx.lineWidth = 2
+      ctx.strokeStyle = '#000000'
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(25,25,13.4,0,2*Math.PI,false)
+      ctx.fillStyle = color
+      ctx.fill()
+      return cursor.toDataURL()
+    }
+    this.canvas.addEventListener('mousemove',e => {
+      if(this.state.isPickingColor) {
+        var[x,y] = getMousePos(e)
+        var pixelColor = Array.from(this.ctx.getImageData(x,y,1,1).data)
+        var pixelColorCss = 'rgba(' + pixelColor + ')'
+        var cursorUrl = makeCursor(pixelColorCss)
+        this.canvas.style.cursor = `url(${cursorUrl}) 6 6, crosshair`
+      }
+    })
+  }
+
   handleDotClick = (e) => {
     //找到用户点击坐标发回去
     console.log('handleDotClick',e.nativeEvent)
@@ -171,6 +220,8 @@ class PixelGrid extends Component {
 
   componentDidMount() {
     this.setUpZoomHandler()
+    this.setUpDragHandler()
+    this.setUpPickColorHandler()
     //这样就只运行一次了，canvas元素还是这个元素，没有变
     console.log('pixel grid did mount')
     this.canvas.style.imageRendering = 'pixelated'
