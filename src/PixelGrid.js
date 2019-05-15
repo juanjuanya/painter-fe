@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ReactDOM from 'react-dom'
 import _ from 'lodash'
+import { domainToASCII } from "url";
 
 
 function getMousePos(e) {
@@ -269,8 +270,10 @@ class PixelGrid extends Component {
       this.forceUpdate()
     })
 
-    this.socket.on('update-dot', ({row,col,color}) => {
-      this.draw(col, row,color)
+    this.socket.on('update-dots', (dots) => {
+      dots.forEach(({col,row,color}) => {
+        this.draw(col, row,color)
+      })
     })
 
   }
