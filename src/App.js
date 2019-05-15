@@ -21,7 +21,7 @@ class App extends Component {
       currentColor: '#ff0000'
     }
     //和服务器建立连接，得早点传，让可读
-    this.socket = io('ws://localhost:3005/')
+    this.socket = io('ws://localhost:3005/')  //this.socket = io() 可以不用传，会自动连接当前域名的当前端口
 }
 
   componentDidMount (){
