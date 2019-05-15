@@ -253,7 +253,7 @@ class PixelGrid extends Component {
     this.socket.on('initial-pixel-data', async pixelData => {
       var image = await createImageFromArrayBuffer(pixelData)//异步构造图片
 
-      document.body.append(image)
+      // document.body.append(image)
       //根据二进制图片对象来重新设置图片大小
       this.canvas.width = image.width 
       this.canvas.height = image.height
