@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import ReactDOM from 'react-dom'
+import ReactDom from 'react-dom'
+import './bootstrap.min.css'
 import _ from 'lodash'
 import { domainToASCII } from "url";
 
@@ -19,8 +20,10 @@ function getMousePos(e) {
 var canvasStyle = {
   // position: 'absolute', //div包了一下
   display: 'block',
-  transformOrigin:'top left',
-  isPickingColor:false, //取色功能
+  transformOrigin: 'top left',
+  boxShadow: '0px 0px 3px black',
+  isPickingColor: false, //取色功能
+  // marginLeft: '26px',
 }
 
 ////定义一个函数画图片render
@@ -261,7 +264,7 @@ class PixelGrid extends Component {
 
       this.setState({
         width: image.width,
-        height: image.height * 0.5, //删除
+        height: image.height, //删除
       })
 
       this.ctx.drawImage(image,0,0)
@@ -289,16 +292,15 @@ class PixelGrid extends Component {
     })
   }
   renderPickColorBtn() {
-    var el = document.getElementById('color-pick-placeholder')//取到了就用，取不到就不用
+    var el = document.getElementById('color-pick-placeholder')
     if (!el) {
       return null
     } else {
-      return ReactDOM.createPortal ((
-        <button onClick={this.setPickColor}>{
-          this.state.isPickingColor ? '正在取色' : '取色'
-        }</button>
+      return ReactDom.createPortal((
+        <button className="btn btn-info" onClick={this.setPickColor}>
+          {this.state.isPickingColor ? '正在取色' : '取色'}
+        </button>
       ), el)
-
     }
   }
 
@@ -310,10 +312,10 @@ class PixelGrid extends Component {
     return (
       <div style={{ 
         position:'relative', 
-        width: this.state.width, 
-        height:this.state.height, 
+        width: '600px', 
+        height: '600px',
         display:'inline-block', 
-        border:'1px solid',
+        // border:'1px solid',
         overflow: 'hidden'
         }}>
         {this.renderPickColorBtn()}
@@ -333,12 +335,12 @@ class PixelGrid extends Component {
             pointerEvents: 'none'
           }}></span>
           <canvas  
-                  style={{
-                    ...canvasStyle,
-                    // zoom: this.state.zoomLevel
-                    transform: 'scale(' + this.state.zoomLevel + ')'
-                  }} 
-                  ref={el => this.canvas = el}>
+            style={{
+              ...canvasStyle,
+              // zoom: this.state.zoomLevel
+              transform: 'scale(' + this.state.zoomLevel + ')'
+            }} 
+            ref={el => this.canvas = el}>
           </canvas>
         </div>
       </div>
